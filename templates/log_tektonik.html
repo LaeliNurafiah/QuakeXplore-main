@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log Klasifikasi Gemap Tektonik</title>
+    <link rel="shortcut icon" href="static\images\logo.png" type="image/svg+xml"/>
+    <link rel="stylesheet" href="static/css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto:wght@700;900&display=swap" rel="stylesheet"/>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <style>        
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333333;
+    }
+    
+    .log-table {
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    thead {
+        background-color: #000000;
+        color: #ffffff;
+    }
+    
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #dddddd;
+    }
+    
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    </style>
+</head>
+<body>
+    <header class="header" data-header>
+        <div class="container">
+            <nav class="navbar" data-navbar>
+                <ul class="navbar-list container">
+                    <li>
+                        <a href="{{ url_for('index') }}" class="navbar-link active" data-nav-link>BERANDA</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('klasifikasi_tektonik') }}" class="navbar-link" data-nav-link="">KLASIFIKASI GEMPA TEKTONIK</a>
+                    </li>
+                        <a href="{{ url_for('klasifikasi_vulkanik') }}" class="navbar-link" data-nav-link="">KLASIFIKASI GEMPA VULKANIK</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('chat') }}" class="navbar-link" data-nav-link>CHATBOT</a>
+                    </li>
+                </ul>
+            </nav>
+  
+            <div class="logo">
+                <a href="{{ url_for('index') }}"><img src="static\images\logo.png" alt="Logo Kamu" class="img-fluid"/></a>
+            </div>
+  
+            <button class="nav-toggle-btn" aria-label="toggle manu" data-nav-toggler>
+                <ion-icon name="menu-outline" aria-hidden="true"></ion-icon>
+            </button>
+        </div>
+    </header>
+    <main>
+        <article>
+            <div class="container">
+                <section class="section hero" aria-label="hero" id="home">
+                        <h1>Log History</h1>
+                        <div class="log-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Kedalaman</th>
+                                        <th>Magnitudo</th>
+                                        <th>Classification Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for log in logs %}
+                                    <tr>
+                                        <td>{{ log.timestamp.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ log.timestamp.strftime('%H:%M:%S') }}</td>
+                                        <td>{{ log.kedalaman }}</td>
+                                        <td>{{ log.magnitudo }}</td>
+                                        <td>{{ log.classification_result }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                </section>
+            </div>
+        </article>
+    </main>
+    <br>
+    <br>
+    <footer class="footer">
+        <div class="section footer-top">
+          <div class="container">
+            <div class="footer-brand">
+              <a href="#" class="logo">APLIKASI GEMPA</a>
+              <p class="section-text">
+                SeismoSavior adalah aplikasi pemantau gempa berbasis web yang
+                menyediakan informasi real-time tentang aktivitas seismik,
+                dilengkapi dengan fitur chatbot AI bernama Savior.
+              </p>
+              <ul class="social-list">
+                <li>
+                  <a href="#" class="social-link">
+                    <ion-icon name="logo-instagram"></ion-icon>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" class="social-link">
+                    <ion-icon name="logo-youtube"></ion-icon>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" class="social-link">
+                    <ion-icon name="logo-facebook"></ion-icon>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" class="social-link">
+                    <ion-icon name="logo-google"></ion-icon>
+                  </a>
+                </li>
+              </ul>
+            </div>
+    
+            <ul class="footer-list">
+              <li>
+                <p class="footer-list-title">Jelajahi</p>
+              </li>
+              <li>
+                <a href="#" class="footer-link">Fitur Aplikasi</a>
+              </li>
+              <li>
+                <a href="#" class="footer-link">Tentang Kami</a>
+              </li>
+              <li>
+                <a href="#" class="footer-link">Kontak Kami</a>
+              </li>
+              <li>
+                <a href="#" class="footer-link">Artikel Gempa</a>
+              </li>
+            </ul>
+    
+            <ul class="footer-list">
+              <li>
+                <p class="footer-list-title">Lainnya</p>
+              </li>
+              <li>
+                <a href="#" class="footer-link">Kebijakan Privasi</a>
+              </li>
+              <li>
+                <a href="#" class="footer-link">Download Aplikasi</a>
+              </li>
+              <li>
+                <a href="#" class="footer-link">Syarat & Ketentuan</a>
+              </li>
+            </ul>
+    
+            <ul class="footer-list">
+              <li>
+                <p class="footer-list-title">Hubungi Kami</p>
+              </li>
+              <li class="footer-item">
+                <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+                <a href="087791921967" class="item-link">0814-7663-1143</a>
+              </li>
+              <li class="footer-item">
+                <ion-icon name="mail-outline" aria-hidden="true"></ion-icon>
+                <a href="mailto:laelinurafiah17@gmail.com" class="item-link">laelinurafiah17@gmail.com</a>
+              </li>
+              <li class="footer-item">
+                <ion-icon name="map-outline" aria-hidden="true"></ion-icon>
+                <address class="item-link address">
+                  Tegal, Jawa Tengah, Indonesia
+                </address>
+              </li>
+            </ul>
+          </div>
+        </div>
+    
+        <div class="footer-bottom">
+          <div class="container">
+            <p class="copyright">
+              &copy; 2024 All Rights Reserved by
+              <a href="#" class="copyright-link">Aplikasi Gempa</a>.
+            </p>
+          </div>
+        </div>
+      </footer>
+</body>
+</html>

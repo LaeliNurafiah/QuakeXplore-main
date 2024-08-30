@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Gempa</title>
+  <link rel="shortcut icon" href="static/images/logo.png" type="image/svg+xml">
+  <link rel="stylesheet" href="static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto:wght@700;900&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .modal {
+      display: none; /* Modal diatur default tidak terlihat */
+      position: fixed; /* Tetap pada jendela browser */
+      z-index: 1000; /* Tingkat z-indeks tinggi untuk memastikan overlay di atas konten lain */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5); /* Background semi-transparan */
+      overflow: auto; /* Scrolling jika konten lebih panjang dari jendela modal */
+    }
+
+    /* Konten modal */
+    .modal-content {
+      background-color: #fefefe; /* Warna latar belakang konten modal */
+      margin: 15% auto; /* Posisi tengah vertical dan horizontal */
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%; /* Lebar konten modal */
+      max-width: 600px; /* Batas maksimum lebar modal */
+      position: relative; /* Relatif untuk penempatan button close */
+      border-radius: 10px; /* Rounded corners */
+    }
+
+    .pmodal {
+      text-align: center;
+      font-size: 20px;
+    }
+
+    /* Tombol close */
+    .close {
+      color: #aaa;
+      position: absolute; /* Memastikan posisi absolut */
+      top: 15px; /* Jarak dari atas */
+      right: 11px; /* Jarak dari kanan */
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* CSS INDEX2 BARU */
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2ecc71;
+      --background-color: #ecf0f1;
+      --text-color: #34495e;
+      --border-radius: 8px;
+    }
+    
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .prediction-section, .search-section {
+      background-color: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    input[type="number"], select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+    }
+    
+    .btn-predict, .btn-search {
+      background-color: black; /* Mengubah warna latar belakang tombol menjadi hitam */
+      color: white; /* Mengubah warna teks tombol menjadi putih */
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+    
+    .btn-predict:hover, .btn-search:hover {
+      background-color: #333; /* Warna latar belakang tombol saat dihover */
+    }
+    
+    flash-messages {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    flash-messages li {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: var(--border-radius);
+    }
+    
+    flash-messages .success {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+    
+    flash-messages .error {
+      background-color: #e74c3c;
+      color: white;
+    }
+    
+    .results-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .table-container, .chart-container {
+      flex: 1;
+      min-width: 300px;
+      background-color: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: black; /* Mengubah warna teks tabel menjadi hitam */
+    }
+    
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      color: black; /* Mengubah warna teks th dan td menjadi hitam */
+    }
+    
+    th {
+      background-color: var(--primary-color);
+      color: white; /* Mengubah warna teks th menjadi putih */
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    
+    tr:hover {
+      background-color: #ddd;
+    }
+    
+    @media (max-width: 768px) {
+      .results-container {
+        flex-direction: column;
+      }
+    }
+    .popup {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+  }
+
+  .popup-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    text-align: center;
+  }
+
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+    
+  </style>
+</head>
+
+<body id="top">
+  <!-- Alert box untuk pesan flash -->
+  <!-- {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <script>
+        window.addEventListener('DOMContentLoaded', () => {
+          alert('{{ messages[0] }}');
+        });
+      </script>
+    {% endif %}
+  {% endwith %} -->
+
+  <!-- Modal HTML -->
+  <div id="alertModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <p class="pmodal">{{ alert_message }}</p>
+    </div>
+  </div>
+
+  <div class="loader">
+    <img src="static/images/logo.png" alt="Loading Logo">
+  </div>
+  <header class="header" data-header>
+    <div class="container">
+      <nav class="navbar" data-navbar>
+        <ul class="navbar-list container">
+          <li><a href="{{ url_for('index') }}" class="navbar-link active" data-nav-link>BERANDA</a></li>
+          <li><a href="{{ url_for('klasifikasi_tektonik') }}" class="navbar-link" data-nav-link>KLASIFIKASI GEMPA TEKTONIK</a></li>
+          <li><a href="{{ url_for('klasifikasi_vulkanik') }}" class="navbar-link" data-nav-link>KLASIFIKASI GEMPA VULKANIK</a></li>
+          <li><a href="{{ url_for('chat') }}" class="navbar-link" data-nav-link>CHATBOT</a></li>
+        </ul>
+      </nav>
+      <div class="logo">
+        <a href="{{ url_for('index') }}"><img src="static/images/logo.png" alt="Logo Kamu" class="img-fluid"></a>
+      </div>
+      <button class="nav-toggle-btn" aria-label="toggle manu" data-nav-toggler>
+        <ion-icon name="menu-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+  </header>
+
+  <br>
+  <br>
+  <br>
+  <br>
+
+  <main>
+    <section class="prediction-section">
+      <h1>Prediksi Gempa</h1>
+      <form action="/" method="post" class="prediction-form">
+        <div class="form-group">
+          <label for="month">Bulan:</label>
+          <input type="number" id="month" name="month" value="{{ selected_month }}" min="1" max="12" step="1" required>
+        </div>
+        <div class="form-group">
+          <label for="year">Tahun:</label>
+          <input type="number" id="year" name="year" value="{{ selected_year }}" min="2000" max="2030" step="1" required>
+        </div>
+        <button type="submit" class="btn-predict">Prediksi</button>
+      </form>
+    </section>
+  
+    <section class="search-section">
+      <form action="/search" method="post" class="search-form">
+        <div class="form-group">
+          <label for="province">Cari Berdasarkan Provinsi:</label>
+          <select id="province" name="province">
+            {% for provinsi in provinces %}
+              <option value="{{ provinsi }}" {% if provinsi == selected_province %} selected {% endif %}>{{ provinsi }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn-search">Cari</button>
+      </form>
+    </section>
+  
+    <section class="messages-section">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flash-messages">
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+    </section>   
+    
+    {% if tables %}
+    <section class="results-section">
+      <div class="results-container">
+        <div class="table-container">
+          {% for table in tables %}
+            {{ table|safe }}
+          {% endfor %}
+        </div>
+        <div class="chart-container">
+          <canvas id="earthquakeChart" width="400" height="400"></canvas>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+  </main>
+  <div id="popup" class="popup">
+    <div class="popup-content">
+      <span class="close">&times;</span>
+      <h2>Hasil Pencarian</h2>
+      <p id="popup-message"></p>
+      <button id="tutupPopup" class="btn btn-secondary">Tutup</button>
+    </div>
+  </div>
+  
+  
+      <section>
+        <div class="container">
+          <center>
+            <h1 style="font-size: 30px;">ARTIKEL BERITA</h1>
+          </center>
+          <br>
+          <div class="article-container">
+            {% for article in articles[:4] %}
+            <div class="article">
+              <h3 style="display: inline;">
+                <a style="display: inline;" href="{{ url_for('view_article', article_id=article.id) }}">
+                  {{ article.title[:75] }}{% if article.title|length > 75 %} ...{% endif %}
+                </a>
+              </h3>
+              <img src="{{ article.image_url }}" alt="{{ article.title }}">
+              <p>{{ article.content[:200] }}{% if article.content|length > 200 %}... {% endif %}</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+  <footer class="footer">
+    <div class="section footer-top">
+        <div class="container">
+            <div class="footer-brand">
+                <a href="#" class="logo">APLIKASI GEMPA</a>
+                <p class="section-text">
+                    QuakeXplore adalah aplikasi pemantau gempa berbasis web yang menyediakan informasi real-time tentang aktivitas seismik, dilengkapi dengan fitur chatbot AI bernama Savior. 
+                </p>
+                <ul class="social-list">
+                    <li><a href="https://www.instagram.com/laelinurafiah/" class="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
+                    <li><a href="https://www.youtube.com/@laelinurafiah1009" class="social-link"><ion-icon name="logo-youtube"></ion-icon></a></li>
+                    <li><a href="https://www.facebook.com/share/2SP4wnAPkRnryU2C/?mibextid=qi2Omg" class="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
+                    <li><a href="laelinurafiah17@gmail.com" class="social-link"><ion-icon name="logo-google"></ion-icon></a></li>
+                  </ul>
+            </div>
+            <ul class="footer-list">
+                <li>
+                    <p class="footer-list-title">Hubungi Kami</p>
+                </li>
+                <li class="footer-item">
+                    <ion-icon name="call-outline" aria-hidden="true"></ion-icon>
+                    <a href="tel:087791921967" class="item-link">0814-7663-1143</a>
+                </li>
+                <li class="footer-item">
+                    <ion-icon name="mail-outline" aria-hidden="true"></ion-icon>
+                    <a href="mailto:laelinurafiah17@gmail.com" class="item-link">laelinurafiah17@gmail.com</a>
+                </li>
+                <li class="footer-item">
+                    <ion-icon name="map-outline" aria-hidden="true"></ion-icon>
+                    <address class="item-link address">
+                        Tegal, Jawa Tengah, Indonesia
+                    </address>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div class="container">
+            <p class="copyright">
+                &copy; 2024 All Rights Reserved by <a href="#" class="copyright-link">Aplikasi Gempa</a>.
+            </p>
+        </div>
+    </div>
+</footer>
+
+
+  <script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    const flashMessages = document.querySelectorAll('.flash-messages li');
+    if (flashMessages.length > 0) {
+      flashMessages.forEach(message => {
+        if (message.classList.contains('warning')) {
+          showPopup(message.textContent);
+        }
+      });
+    }
+
+    const closeBtn = document.querySelector(".close");
+    const tutupPopupBtn = document.getElementById("tutupPopup");
+
+    closeBtn.onclick = function() {
+      closePopup();
+    }
+
+    tutupPopupBtn.onclick = function() {
+      closePopup();
+    }
+
+    window.onclick = function(event) {
+      const popup = document.getElementById("popup");
+      if (event.target == popup) {
+        closePopup();
+      }
+    }
+  });
+
+  function showPopup(message) {
+    const popup = document.getElementById("popup");
+    const popupMessage = document.getElementById("popup-message");
+    popupMessage.textContent = message;
+    popup.style.display = "block";
+  }
+
+  function closePopup() {
+    const popup = document.getElementById("popup");
+    popup.style.display = "none";
+    window.location.href = "/";
+  }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    {% if chart_data %}
+        const ctx = document.getElementById('earthquakeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_data.labels|tojson }},
+                datasets: [
+                    {
+                        label: 'Predicted Depth',
+                        data: {{ chart_data.depth|tojson }},
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                        fill: false
+                    },
+                    {
+                        label: 'Predicted Magnitude',
+                        data: {{ chart_data.magnitude|tojson }},
+                        borderColor: 'red',
+                        backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.dataset.label + ': ' + tooltipItem.raw;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Value'
+                        }
+                    }
+                }
+            }
+        });
+    {% endif %}
+});
+
+    window.addEventListener("load", function() {
+      setTimeout(function() {
+        const loader = document.querySelector(".loader");
+        loader.style.display = "none";
+      }, 200);
+    });
+
+    var modal = document.getElementById('alertModal');
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the document is loaded, check if alert_message is not empty
+    window.onload = function() {
+      var alertMessage = "{{ alert_message }}";
+      if (alertMessage.trim() != "") {
+        modal.style.display = "block";
+      }
+    }
+
+    // Close the modal when the close (x) button is clicked
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    // Close the modal when clicking outside of it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+  </script>
+  <script src="static/assets/js/script.js" defer></script>
+</body>
+
+</html>
